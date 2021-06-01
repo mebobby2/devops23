@@ -39,6 +39,6 @@ The sequence of events that transpired with the kubectl create -f pod/db.yml com
 6. Finally, Kubelet sent a request to the API server notifying it that the Pod was created successfully.
 
 ## Upto
-Page 53
+Page 61
 
-Scaling Pods With ReplicaSets
+Since we saved the configuration, we can apply an updated definition
