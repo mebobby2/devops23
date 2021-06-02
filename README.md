@@ -76,6 +76,6 @@ Example output:
 ```
 
 ## Upto
-Page 77
+Page 82
 
-Before we move on, we’ll delete the Service and the ReplicaSet we created
+We got the response 200 and a friendly hello
