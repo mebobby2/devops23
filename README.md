@@ -38,7 +38,44 @@ The sequence of events that transpired with the kubectl create -f pod/db.yml com
 5. Kubelet sent a request to Docker requesting the creation of the containers that form the Pod. In our case, the Pod defines a single container based on the mongo image.
 6. Finally, Kubelet sent a request to the API server notifying it that the Pod was created successfully.
 
-## Upto
-Page 61
+## Issues
+### Docker Networking
+https://docs.docker.com/docker-for-mac/networking/#known-limitations-use-cases-and-workarounds
 
-Since we saved the configuration, we can apply an updated definition
+### There is no docker0 bridge on macOS
+Because of the way networking is implemented in Docker Desktop for Mac, you cannot see a docker0 interface on the host. This interface is actually within the virtual machine.
+
+That is, the docker0 bridge is not created on Docker Desktop of Mac, but created inside the docker engine running in the Minikube container running on Docker Desktop for Mac.
+
+### I cannot ping my containers
+Docker Desktop for Mac can’t route traffic to containers.
+
+### Per-container IP addressing is not possible
+The docker (Linux) bridge network is not reachable from the macOS host.
+
+Because we are using Minikube with the Docker driver, Minikube will not get a host-only IP address. This means we cannot access NodePort services via the Minikube IP e.g. using http://$MINIKUBE_IP:NODE_PORT. If we used the VM driver, then we can, because the VM is exposed to the host system via a host-only IP address.
+
+The workaround is to use a SSH tunnel. Use this command to create a tunnel: minikube service <SERVICE_NAME>
+
+Example output:
+```
+ minikube service go-demo-2
+|-----------|-----------|-------------|---------------------------|
+| NAMESPACE |   NAME    | TARGET PORT |            URL            |
+|-----------|-----------|-------------|---------------------------|
+| default   | go-demo-2 |       28017 | http://192.168.49.2:30001 |
+|-----------|-----------|-------------|---------------------------|
+🏃  Starting tunnel for service go-demo-2.
+|-----------|-----------|-------------|------------------------|
+| NAMESPACE |   NAME    | TARGET PORT |          URL           |
+|-----------|-----------|-------------|------------------------|
+| default   | go-demo-2 |             | http://127.0.0.1:61768 |
+|-----------|-----------|-------------|------------------------|
+🎉  Opening service default/go-demo-2 in default browser...
+❗  Because you are using a Docker driver on darwin, the terminal needs to be open to run it.
+```
+
+## Upto
+Page 77
+
+Before we move on, we’ll delete the Service and the ReplicaSet we created
