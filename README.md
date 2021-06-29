@@ -38,6 +38,13 @@ The sequence of events that transpired with the kubectl create -f pod/db.yml com
 5. Kubelet sent a request to Docker requesting the creation of the containers that form the Pod. In our case, the Pod defines a single container based on the mongo image.
 6. Finally, Kubelet sent a request to the API server notifying it that the Pod was created successfully.
 
+### Kube Services
+Provides access to Pods from inside the cluster (through Kube Proxy) or from outside the cluster (through Kube DNS).
+
+Each node has a kube-proxy container process. kube-proxy manages forwarding of traffic addressed to the virtual IP addresses (VIPs) of the cluster’s Kubernetes Service objects to the appropriate backend pods.
+
+As of Kubernetes v1.12, CoreDNS is the recommended DNS Server, replacing kube-dns.
+
 ## Issues
 ### Docker Networking
 https://docs.docker.com/docker-for-mac/networking/#known-limitations-use-cases-and-workarounds
@@ -76,6 +83,6 @@ Example output:
 ```
 
 ## Upto
-Page 87
+Page 92
 
-What Now?
+Deploying Releases With Zero-Downtime
