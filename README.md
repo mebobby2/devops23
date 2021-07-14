@@ -48,6 +48,12 @@ Provides access to Pods from inside the cluster (through Kube Proxy) or from out
 Each node has a kube-proxy container process. kube-proxy manages forwarding of traffic addressed to the virtual IP addresses (VIPs) of the cluster’s Kubernetes Service objects to the appropriate backend pods.
 
 As of Kubernetes v1.12, CoreDNS is the recommended DNS Server, replacing kube-dns.
+### Rolling Back Or Rolling Forward?
+Something unexpected will happen. A bug will sneak in and put our production cluster at risk. What should we do in such a case? The answer to that question largely depends on the size of the changes and the frequency of deployments.
+
+If we are using continuous deployment process, we are deploying new releases to production fairly often. Instead of waiting until features accumulate, we are deploying small chunks. In such cases, fixing a problem might be just as fast as rolling back. After all, how much time would it take you to fix a problem caused by only a few hours of work (maybe a day) and that was discovered minutes after you committed? Probably not much. The problem was introduced by a very recent change that is still in engineer’s head. Fixing it should not take long, and we should be able to deploy a new release soon.
+
+Rolling back a release that introduced database changes is often not possible. Even when it is, rolling forward is usually a better option when practicing continuous deployment with high-frequency releases limited to a small scope of changes.
 
 ## Issues
 ### Docker Networking
@@ -87,6 +93,6 @@ Example output:
 ```
 
 ## Upto
-Page 107
+Page 111
 
-Rolling Back Or Rolling Forward?
+Rolling Back Failed Deployments
