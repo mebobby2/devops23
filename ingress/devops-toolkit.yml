@@ -8,10 +8,10 @@ metadata:
     nginx.ingress.kubernetes.io/ssl-redirect: "false"
 spec:
   rules:
-  - http:
+  - host: devopstoolkitseries.com
+    http:
       paths:
-      - path: /
-        backend:
+      - backend:
           serviceName: devops-toolkit
           servicePort: 80
 

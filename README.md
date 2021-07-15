@@ -109,8 +109,6 @@ Alternatively to use this addon you can use a vm-based driver: 'minikube start -
 ## Official Repo
 https://github.com/vfarcic/k8s-specs
 ## Upto
-Page 132
+Page 143
 
-Now that ingress addon is enabled, we’ll check whether it is running inside our cluster.
-
-Before that: figure out how to set up minikube with vm driver instead of docker, there are too many limitations with the docker driver
+Let’s imagine that it would be a good idea to forward all requests
