@@ -6,6 +6,9 @@ Created using 'minikube start'. By default, uses Docker as the driver. Docker is
 
 Minikube creates n container called k8s-minikube/kicbase. If you look inside the running container, it has docker installed inside it (trippy!), and this docker instance runs all the containers needed to form the Kubernetes cluster.
 
+### Hyperkit
+There are a bunch of issues with the Docker vm-driver. One of those being the ingress addon is not supported. Hence we will use hyperkit as the driver instead: 'minikube start --vm-driver=hyperkit'. HyperKit is an open-source hypervisor for macOS hypervisor, optimized for lightweight virtual machines and container deployment. If Docker for Desktop is installed, you already have HyperKit. Docker for Mac uses HyperKit instead of Virtual Box. Hyperkit is a lightweight macOS virtualization solution built on top of Hypervisor.framework in macOS 10.10 Yosemite and higher. HyperKit is basically a toolkit for embedding hypervisor capabilities in your application.
+
 ## Quick Notes & Tips
 * High availability is accomplished through fault tolerance and scalability. If either is missing, any failure might have disastrous effects.
 * Zero-downtime deployment is a prerequisite for higher frequency releases.
@@ -103,6 +106,8 @@ Example output:
 Due to networking limitations of driver docker on darwin, ingress addon is not supported.
 Alternatively to use this addon you can use a vm-based driver: 'minikube start --vm=true'.
 
+## Official Repo
+https://github.com/vfarcic/k8s-specs
 ## Upto
 Page 132
 
