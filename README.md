@@ -56,6 +56,12 @@ If we are using continuous deployment process, we are deploying new releases to 
 
 Rolling back a release that introduced database changes is often not possible. Even when it is, rolling forward is usually a better option when practicing continuous deployment with high-frequency releases limited to a small scope of changes.
 
+### Ingress Controllers
+Ingress objects manage external access to the applications running inside a Kubernetes cluster. While, at first glance, it might seem that we already accomplished that through Kubernetes Services, they do not make the applications truly accessible. We still need forwarding rules based on paths and domains, SSL termination and a number of other features. In a more traditional setup, we’d probably use an external proxy and a load balancer. Ingress provides an API that allows us to accomplish these things, in addition to a few other features we expect from a dynamic cluster.
+
+Unlike other types of Controllers that are typically part of the kube-controller-manager binary, Ingress Controller needs to be installed separately. Instead of a Controller, kube-controller-manager offers Ingress resource that other third-party solutions can utilize to provide requests forwarding and SSL features. In other words, Kubernetes only provides an API, and we need to set up a Controller that will use it.
+
+Fortunately, the community already built a myriad of Ingress Controllers.
 ## Issues
 ### Docker Networking
 https://docs.docker.com/docker-for-mac/networking/#known-limitations-use-cases-and-workarounds
@@ -93,7 +99,13 @@ Example output:
 ❗  Because you are using a Docker driver on darwin, the terminal needs to be open to run it.
 ```
 
-## Upto
-Page 111
+### Ingress Add On
+Due to networking limitations of driver docker on darwin, ingress addon is not supported.
+Alternatively to use this addon you can use a vm-based driver: 'minikube start --vm=true'.
 
-Rolling Back Failed Deployments
+## Upto
+Page 132
+
+Now that ingress addon is enabled, we’ll check whether it is running inside our cluster.
+
+Before that: figure out how to set up minikube with vm driver instead of docker, there are too many limitations with the docker driver
