@@ -14,6 +14,9 @@ There are a bunch of issues with the Docker vm-driver. One of those being the in
 * Zero-downtime deployment is a prerequisite for higher frequency releases.
 * Never deploy third-party images based on latest tags. By being explicit with the release, we have more control over what is running in production, as well as what should be the next upgrade.
 * The number of replicas should not be part of the design. Instead, they are a fluctuating number that changes continuously (or at least often), depending on the traffic, memory and CPU utilization, and so on.
+* Docker and many other images use alpine as the base. If you’re not familiar with alpine, it is a very slim and efficient base image, and I strongly recommend that you use it when building your own. Images like debian, centos, ubuntu, redhat, and similar base images are often a terrible choice made because of a misunderstanding of how containers work.
+* Uses Docker’s multi-stage builds. E.g. The first stage downloads the dependencies, it runs unit tests, and it builds the binary. The second stage starts over. It builds a fresh image with the go-demo binary copied from the previous stage. For some advantages of milti-stage builds, read this: https://blog.alexellis.io/mutli-stage-docker-builds/
+* hostPath is a great solution for accessing host resources like /var/run/docker.sock, /dev/cgroups, and others. That is, as long as the resource we’re trying to reach is on the same node as the Pod.
 ## Notes
 ### Immutable vs Mutable Infrastructure
 Chef, Puppet, Ansible are designed for mutable infrastructure, that is, they were designed with the idea that servers are brought into the desired state at runtime. Immutable processes, on the other hand, assume that (almost) nothing is changeable at runtime. Artifacts were supposed to be created as immutable images. In case of infrastructure, that meant that VMs are created from images, and not changed at runtime. If an upgrade is needed, new image should be created followed with a replacement of old VMs with new ones based on the new image.
@@ -65,6 +68,15 @@ Ingress objects manage external access to the applications running inside a Kube
 Unlike other types of Controllers that are typically part of the kube-controller-manager binary, Ingress Controller needs to be installed separately. Instead of a Controller, kube-controller-manager offers Ingress resource that other third-party solutions can utilize to provide requests forwarding and SSL features. In other words, Kubernetes only provides an API, and we need to set up a Controller that will use it.
 
 Fortunately, the community already built a myriad of Ingress Controllers.
+
+### What is the difference between character and block device drivers in UNIX?
+They are two main types of devices under all Unix systems:
+
+A Character Device is a device whose driver communicates by sending and receiving single characters (bytes, octets). Example - serial ports, parallel ports, sound cards, keyboard.
+
+A Block Device is a device whose driver communicates by sending entire blocks of data. Example - hard disks, USB cameras, Disk-On-Key.
+
+(Note: Filesystems can only be mounted if they are on block devices.)
 ## Issues
 ### Docker Networking
 https://docs.docker.com/docker-for-mac/networking/#known-limitations-use-cases-and-workarounds
@@ -109,6 +121,6 @@ Alternatively to use this addon you can use a vm-based driver: 'minikube start -
 ## Official Repo
 https://github.com/vfarcic/k8s-specs
 ## Upto
-Page 143
+Page 156
 
-Let’s imagine that it would be a good idea to forward all requests
+Using hostPath Volume Type To Inject Configuration
