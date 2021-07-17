@@ -17,6 +17,8 @@ There are a bunch of issues with the Docker vm-driver. One of those being the in
 * Docker and many other images use alpine as the base. If you’re not familiar with alpine, it is a very slim and efficient base image, and I strongly recommend that you use it when building your own. Images like debian, centos, ubuntu, redhat, and similar base images are often a terrible choice made because of a misunderstanding of how containers work.
 * Uses Docker’s multi-stage builds. E.g. The first stage downloads the dependencies, it runs unit tests, and it builds the binary. The second stage starts over. It builds a fresh image with the go-demo binary copied from the previous stage. For some advantages of milti-stage builds, read this: https://blog.alexellis.io/mutli-stage-docker-builds/
 * hostPath is a great solution for accessing host resources like /var/run/docker.sock, /dev/cgroups, and others. That is, as long as the resource we’re trying to reach is on the same node as the Pod.
+  * A hostPath Volume maps a directory from a host to where the Pod is running. Using it to 'inject' configuration files into containers would mean that we’d have to make sure that the file is present on every node of the cluster.
+* The create command has dash (-) instead of the path to the file. That’s an indication that stdin should be used instead.
 ## Notes
 ### Immutable vs Mutable Infrastructure
 Chef, Puppet, Ansible are designed for mutable infrastructure, that is, they were designed with the idea that servers are brought into the desired state at runtime. Immutable processes, on the other hand, assume that (almost) nothing is changeable at runtime. Artifacts were supposed to be created as immutable images. In case of infrastructure, that meant that VMs are created from images, and not changed at runtime. If an upgrade is needed, new image should be created followed with a replacement of old VMs with new ones based on the new image.
@@ -121,6 +123,6 @@ Alternatively to use this addon you can use a vm-based driver: 'minikube start -
 ## Official Repo
 https://github.com/vfarcic/k8s-specs
 ## Upto
-Page 156
+Page 165
 
-Using hostPath Volume Type To Inject Configuration
+Persisting State Through The emptyDir Volume Type
