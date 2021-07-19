@@ -19,6 +19,7 @@ There are a bunch of issues with the Docker vm-driver. One of those being the in
 * hostPath is a great solution for accessing host resources like /var/run/docker.sock, /dev/cgroups, and others. That is, as long as the resource we’re trying to reach is on the same node as the Pod.
   * A hostPath Volume maps a directory from a host to where the Pod is running. Using it to 'inject' configuration files into containers would mean that we’d have to make sure that the file is present on every node of the cluster.
 * The create command has dash (-) instead of the path to the file. That’s an indication that stdin should be used instead.
+* An emptyDir volume is first created when a Pod is assigned to a node, and exists as long as that Pod is running on that node. As the name says, the emptyDir volume is initially empty. All containers in the Pod can read and write the same files in the emptyDir volume, though that volume can be mounted at the same or different paths in each container. When a Pod is removed from a node for any reason, the data in the emptyDir is deleted permanently.
 ## Notes
 ### Immutable vs Mutable Infrastructure
 Chef, Puppet, Ansible are designed for mutable infrastructure, that is, they were designed with the idea that servers are brought into the desired state at runtime. Immutable processes, on the other hand, assume that (almost) nothing is changeable at runtime. Artifacts were supposed to be created as immutable images. In case of infrastructure, that meant that VMs are created from images, and not changed at runtime. If an upgrade is needed, new image should be created followed with a replacement of old VMs with new ones based on the new image.
@@ -123,6 +124,6 @@ Alternatively to use this addon you can use a vm-based driver: 'minikube start -
 ## Official Repo
 https://github.com/vfarcic/k8s-specs
 ## Upto
-Page 165
+Page 172
 
-Persisting State Through The emptyDir Volume Type
+Using ConfigMaps To Inject Configuration Files
