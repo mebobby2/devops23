@@ -124,6 +124,6 @@ Alternatively to use this addon you can use a vm-based driver: 'minikube start -
 ## Official Repo
 https://github.com/vfarcic/k8s-specs
 ## Upto
-Page 172
+Page 178
 
-Using ConfigMaps To Inject Configuration Files
+Injecting Configurations From Key/Value Literals
