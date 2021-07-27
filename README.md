@@ -20,6 +20,8 @@ There are a bunch of issues with the Docker vm-driver. One of those being the in
   * A hostPath Volume maps a directory from a host to where the Pod is running. Using it to 'inject' configuration files into containers would mean that we’d have to make sure that the file is present on every node of the cluster.
 * The create command has dash (-) instead of the path to the file. That’s an indication that stdin should be used instead.
 * An emptyDir volume is first created when a Pod is assigned to a node, and exists as long as that Pod is running on that node. As the name says, the emptyDir volume is initially empty. All containers in the Pod can read and write the same files in the emptyDir volume, though that volume can be mounted at the same or different paths in each container. When a Pod is removed from a node for any reason, the data in the emptyDir is deleted permanently.
+* Secrets are almost the same as ConfigMaps. The main difference is that the secret files are created in tmpfs. Kubernetes secrets do not make your system secure. They are only a step towards such a system. We might want to turn our attention towards third-party Secret managers like HashiCorp Vault.
+* The ability to remove a Namespace and all the objects and the resources it hosts is especially useful when we want to create temporary objects. A good example would be continuous deployment (CDP) processes. We can create a Namespace to build, package, test, and do all the other tasks our pipeline requires. Once we’re finished, we can simply remove the Namespace. Otherwise, we would need to keep track of all the objects we created and make sure that they are removed before we terminate the CDP pipeline.
 ## Notes
 ### Immutable vs Mutable Infrastructure
 Chef, Puppet, Ansible are designed for mutable infrastructure, that is, they were designed with the idea that servers are brought into the desired state at runtime. Immutable processes, on the other hand, assume that (almost) nothing is changeable at runtime. Artifacts were supposed to be created as immutable images. In case of infrastructure, that meant that VMs are created from images, and not changed at runtime. If an upgrade is needed, new image should be created followed with a replacement of old VMs with new ones based on the new image.
@@ -80,6 +82,18 @@ A Character Device is a device whose driver communicates by sending and receivin
 A Block Device is a device whose driver communicates by sending entire blocks of data. Example - hard disks, USB cameras, Disk-On-Key.
 
 (Note: Filesystems can only be mounted if they are on block devices.)
+
+### Use ConfigMaps Judiciously
+If you have a configuration that is the same across multiple clusters, or if you have only one cluster, all you should do is include it in your Dockerfile and forget it ever existed. When there are no variations of a config, there’s no need to have a configuration file.
+
+Design your applications to use a combination of configuration files and environment variables. Make sure that the default values in a configuration file are sensible and applicable in most use-cases. Bake it into the image. When running a container, declare only the environment variables that represent the differences of a specific cluster. That way, your configuration will be portable and simple at the same time.
+
+### Not So Secretive Secrets
+Almost everything Kubernetes needs is stored in etcd62. That includes Secrets. The problem is that they are stored as plain text. Anyone with access to etcd has access to Kubernetes Secrets. We can limit the access to etcd, but that’s not the end of our troubles. etcd stores data to disk as plain text. Restricting the access to etcd still leaves the Secrets vulnerable to who has access to the file system.
+
+That, in a way, diminishes the advantage of storing Secrets in containers in tmpfs. There’s not much benefit of having them in tmpfs used by containers, if those same Secrets are stored on disk by etcd.
+
+Even after securing the access to etcd and making sure that unauthorized users do not have access to the file system partition used by etcd, we are still at risk. When multiple replicas of etcd are running, data is synchronized between them. By default, etcd communication between replicas is not secured. Anyone sniffing that communication could get a hold of our secrets.
 ## Issues
 ### Docker Networking
 https://docs.docker.com/docker-for-mac/networking/#known-limitations-use-cases-and-workarounds
@@ -124,6 +138,6 @@ Alternatively to use this addon you can use a vm-based driver: 'minikube start -
 ## Official Repo
 https://github.com/vfarcic/k8s-specs
 ## Upto
-Page 178
+Page 217
 
-Injecting Configurations From Key/Value Literals
+Securing Kubernetes Clusters

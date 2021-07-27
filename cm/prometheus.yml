@@ -3,6 +3,7 @@ kind: Ingress
 metadata:
   name: prometheus
   annotations:
+    kubernetes.io/ingress.class: "nginx"
     ingress.kubernetes.io/ssl-redirect: "false"
     nginx.ingress.kubernetes.io/ssl-redirect: "false"
 spec:
@@ -43,6 +44,13 @@ spec:
         - "--storage.tsdb.path=/prometheus"
         - "--web.console.libraries=/usr/share"
         - "--web.external-url=http://192.168.99.100/prometheus"
+        volumeMounts:
+        - mountPath: /etc/prometheus
+          name: prom-conf
+      volumes:
+      - name: prom-conf
+        configMap:
+          name: prom-conf
 
 ---
 
@@ -56,3 +64,21 @@ spec:
   selector:
     type: monitor
     service: prometheus
+
+---
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: prom-conf
+data:
+  prometheus.yml: |
+    global:
+      scrape_interval:     15s
+
+    scrape_configs:
+      - job_name: prometheus
+        metrics_path: /prometheus/metrics
+        static_configs:
+          - targets:
+            - localhost:9090
