@@ -22,6 +22,7 @@ There are a bunch of issues with the Docker vm-driver. One of those being the in
 * An emptyDir volume is first created when a Pod is assigned to a node, and exists as long as that Pod is running on that node. As the name says, the emptyDir volume is initially empty. All containers in the Pod can read and write the same files in the emptyDir volume, though that volume can be mounted at the same or different paths in each container. When a Pod is removed from a node for any reason, the data in the emptyDir is deleted permanently.
 * Secrets are almost the same as ConfigMaps. The main difference is that the secret files are created in tmpfs. Kubernetes secrets do not make your system secure. They are only a step towards such a system. We might want to turn our attention towards third-party Secret managers like HashiCorp Vault.
 * The ability to remove a Namespace and all the objects and the resources it hosts is especially useful when we want to create temporary objects. A good example would be continuous deployment (CDP) processes. We can create a Namespace to build, package, test, and do all the other tasks our pipeline requires. Once we’re finished, we can simply remove the Namespace. Otherwise, we would need to keep track of all the objects we created and make sure that they are removed before we terminate the CDP pipeline.
+* Port 8443 in Apache Tomcat is used for running your service at HTTPS. The default port for HTTPS is 443, so to avoid conflicts it uses 8443 instead of 443 just like 8080 for HTTP instead of 80.
 ## Notes
 ### Immutable vs Mutable Infrastructure
 Chef, Puppet, Ansible are designed for mutable infrastructure, that is, they were designed with the idea that servers are brought into the desired state at runtime. Immutable processes, on the other hand, assume that (almost) nothing is changeable at runtime. Artifacts were supposed to be created as immutable images. In case of infrastructure, that meant that VMs are created from images, and not changed at runtime. If an upgrade is needed, new image should be created followed with a replacement of old VMs with new ones based on the new image.
@@ -94,6 +95,103 @@ Almost everything Kubernetes needs is stored in etcd62. That includes Secrets. T
 That, in a way, diminishes the advantage of storing Secrets in containers in tmpfs. There’s not much benefit of having them in tmpfs used by containers, if those same Secrets are stored on disk by etcd.
 
 Even after securing the access to etcd and making sure that unauthorized users do not have access to the file system partition used by etcd, we are still at risk. When multiple replicas of etcd are running, data is synchronized between them. By default, etcd communication between replicas is not secured. Anyone sniffing that communication could get a hold of our secrets.
+
+### Authorization Models
+#### ACL (access control list)
+* 'Subject' can 'Action' to 'Object'
+* Based on user and group
+#### DAC (discretionary access control)
+* 'Subject can' 'Action' to 'Object'
+* 'Subject can' 'grant' other 'Subject'
+* Based on user and group
+
+The controls are discretionary in the sense that a subject with a certain access permission is capable of passing that permission (perhaps indirectly) on to any other subject.
+
+#### MAC (mandatory access control)
+Subjects and objects each have a set of security attributes. Whenever a subject attempts to access an object, an authorization rule enforced by the operating system kernel examines these security attributes and decides whether the access can take place. Any operation by any subject on any object is tested against the set of authorization rules (aka policy) to determine if the operation is allowed.
+
+With mandatory access control, this security policy is centrally controlled by a security policy administrator; users do not have the ability to override the policy and, for example, grant access to files that would otherwise be restricted.
+
+#### RBAC (role based access control)
+RBAC differs from access control lists (ACLs), used in traditional discretionary access-control systems, in that it assigns permissions to specific operations with meaning in the organization, rather than to low level data objects. For example, an access control list could be used to grant or deny write access to a particular system file, but it would not dictate how that file could be changed. In an RBAC-based system, an operation might be to ‘create a credit account’ transaction in a financial application or to ‘populate a blood sugar level test’ record in a medical application.
+
+* Subject is a Role which has Permission of Action to Object
+* Can implement mandatory access control (MAC) or discretionary access control (DAC).
+* (User or group)-role-permission-object
+
+##### Group vs Role
+* Group: a collection of users
+  * Dino, James and Liam are members of Meifamly Organization
+* Role: a collection of permissions
+  * Writer is a role, which can create, update articles
+  * Role can be applied to user and group.
+
+Example:
+```
+Permission:
+    - Name: write article
+    - Operations:
+        - Object: Article
+          Action: Created
+        - Object: Article
+          Action: Updated
+        - Object: Article
+          Action: Read
+    - Name: manage article
+    - Operations:
+        - Object: Article
+          Action: Delete
+        - Object: Article
+          Action: Read
+```
+
+#### ABAC (attribute-based access control)
+Unlike role-based access control (RBAC), which employs pre-defined roles that carry a specific set of privileges associated with them and to which subjects are assigned, the key difference with ABAC is the concept of policies that express a complex Boolean rule set that can evaluate many different attributes.
+* Subject who is xxx can Action to Object which is xxx in Environment
+* Concept
+  * Policies: bring together attributes to express what can happen and is not allowed.
+  * Attributes
+    * Subject (age, clearance, department, role, job title)
+    * Action (read, delete, view, approve)
+    * Resource (the object type (medical record, bank account…), the department, the classification or sensitivity, the location)
+    * Contextual (environment) - attributes that deal with time, location or dynamic aspects of the access control scenario
+* Standard: XACML (eXtensible Access Control Markup Language)
+
+Example: AWS Resource-Based Policies is a kind of ABAC
+```
+{
+"Version": "2012-10-17",
+"Statement": [
+    {
+        "Effect": "Allow",
+        "Action": [
+            "ec2:TerminateInstances"
+        ],
+        "Resource": [
+            "*"
+        ]
+    },
+    {
+        "Effect": "Deny",
+        "Action": [
+            "ec2:TerminateInstances"
+        ],
+        "Condition": {"NotIpAddress": {"aws:SourceIp": [
+            "192.0.2.0/24",
+            "203.0.113.0/24"
+            ]}},
+        "Resource": [
+            "arn:aws:ec2:<REGION>:<ACCOUNTNUMBER>:instance/*"
+        ]
+    }
+]
+}
+```
+
+Reference: https://dinolai.com/notes/others/authorization-models-acl-dac-mac-rbac-abac.html
+
+
+
 ## Issues
 ### Docker Networking
 https://docs.docker.com/docker-for-mac/networking/#known-limitations-use-cases-and-workarounds
@@ -138,6 +236,6 @@ Alternatively to use this addon you can use a vm-based driver: 'minikube start -
 ## Official Repo
 https://github.com/vfarcic/k8s-specs
 ## Upto
-Page 217
+Page 220
 
-Securing Kubernetes Clusters
+Creating Users
