@@ -234,8 +234,8 @@ Due to networking limitations of driver docker on darwin, ingress addon is not s
 Alternatively to use this addon you can use a vm-based driver: 'minikube start --vm=true'.
 
 ## Official Repo
-https://github.com/vfarcic/k8s-specs
+0https://github.com/vfarcic/k8s-specs
 ## Upto
-Page 220
+Page 246
 
-Creating Users
+Managing Resources
