@@ -190,6 +190,12 @@ Example: AWS Resource-Based Policies is a kind of ABAC
 
 Reference: https://dinolai.com/notes/others/authorization-models-acl-dac-mac-rbac-abac.html
 
+### Stress Testing?
+What you need is a way to predict how much resources an application will use in production, not in a simple test environment. You might be inclined to run stress tests that would simulate production setup. Do that. It’s significant, but it does not necessarily result in real production-like behavior.
+
+Replicating production and behavior of real users is tough. Stress tests will get you half-way. For the other half, you’ll have to monitor your applications in production and, among other things, adjust resources accordingly.
+
+Simple test environments do not reflect production usage of resources. Stress tests are a good start, but not a complete solution. Only production provides real metrics.
 
 
 ## Issues
@@ -234,8 +240,8 @@ Due to networking limitations of driver docker on darwin, ingress addon is not s
 Alternatively to use this addon you can use a vm-based driver: 'minikube start --vm=true'.
 
 ## Official Repo
-0https://github.com/vfarcic/k8s-specs
+https://github.com/vfarcic/k8s-specs
 ## Upto
-Page 246
+Page 266
 
-Managing Resources
+We’ll start by creating a test Namespace.
