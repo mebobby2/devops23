@@ -199,6 +199,23 @@ Simple test environments do not reflect production usage of resources. Stress te
 
 ### Namespaces and Multi-tenancy
 Dividing a cluster into Namespaces and employing RBAC is not enough. RBAC prevents unauthorized users from accessing the cluster and provides permissions to those we trust. However, RBAC does not prevent users from accidentally (or intentionally) putting the cluster in danger through too many deployments, too big applications, or inaccurate sizing. Only by combining RBAC with resource quotas and network policies can we hope for a fault tolerant and robust cluster capable of reliably hosting our applications.
+
+### Master Node HA
+Every piece of information that enters one of the master nodes is propagated to the others, and only after the majority agrees, that information is committed. If we lose majority (50%+1), masters cannot establish a quorum and cease to operate. If one out of two masters is down, we can get only half of the votes, and we would lose the ability to establish the quorum. Therefore, we need three masters or more. Odd numbers greater than one are “magic” numbers. Always set an odd number greater than one for master nodes.
+
+### Networking
+Which networking shall we use? We can choose between kubenet, CNI, classic, and external networking. The classic Kubernetes native networking is deprecated in favor of kubenet, so we can discard it right away. The external networking is used in some custom implementations and for particular use cases, so we’ll discard that one as well.
+
+That leaves us with kubenet and CNI.
+
+Container Network Interface (CNI) allows us to plug in a third-party networking driver. Kops supports Calico98, flannel99, Canal (Flannel + Calico)100, kopeio-vxlan101, kube-router102, romana103, weave104, and amazon-vpc-routed-eni105 networks. Each of those networks comes with pros and cons and differs in its implementation and primary objectives.
+
+Kubenet is kops’ default networking solution. It is Kubernetes native networking, and it is considered battle tested and very reliable. However, it comes with a limitation. On AWS, routes for each node are configured in AWS VPC routing tables. Since those tables cannot have more than fifty entries, kubenet can be used in clusters with up to fifty nodes. If you’re planning to have a cluster bigger than that, you’ll have to switch to one of the previously mentioned CNIs.
+
+Use kubenet networking if your cluster is smaller than fifty nodes.
+
+### Mix Master & Worker Nodes
+It might be worth pointing out that containers that form our applications are always running in worker nodes. Master servers, on the other hand, are entirely dedicated to running Kubernetes system. That does not mean that we couldn’t create a cluster in the way that masters and workers are combined into the same servers, just as we did with Minikube. However, that is risky, and we’re better off separating the two types of nodes. Masters are more reliable when they are running on dedicated servers. Kops knows that, and it does not even allow us to mix the two.
 ## Issues
 ### Docker Networking
 https://docs.docker.com/docker-for-mac/networking/#known-limitations-use-cases-and-workarounds
@@ -243,6 +260,6 @@ Alternatively to use this addon you can use a vm-based driver: 'minikube start -
 ## Official Repo
 https://github.com/vfarcic/k8s-specs
 ## Upto
-Page 286
+Page 337
 
-I will assume that you already have an AWS account
+Persisting State
