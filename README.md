@@ -216,6 +216,27 @@ Use kubenet networking if your cluster is smaller than fifty nodes.
 
 ### Mix Master & Worker Nodes
 It might be worth pointing out that containers that form our applications are always running in worker nodes. Master servers, on the other hand, are entirely dedicated to running Kubernetes system. That does not mean that we couldn’t create a cluster in the way that masters and workers are combined into the same servers, just as we did with Minikube. However, that is risky, and we’re better off separating the two types of nodes. Masters are more reliable when they are running on dedicated servers. Kops knows that, and it does not even allow us to mix the two.
+
+### AWS Volumes
+Elastic File System (EFS), has a distinct advantage that it can be mounted to multiple EC2 instances spread across multiple availability zones. It is closest we can get to fault-tolerant storage. Even if a whole zone (datacenter) fails, we’ll still be able to use EFS in the rest of the zones used by our cluster. However, that comes at a cost. EFS introduces a performance penalty. It is, after all, a network file system (NFS), and that entails higher latency.
+
+Elastic Block Store (EBS) is the fastest storage we can use in AWS. Its data access latency is very low thus making it the best choice when performance is the primary concern. The downside is availability. It doesn’t work in multiple availability zones. Failure of one will mean downtime, at least until the zone is restored to its operational state. Unlike EFS, Elastic Block Store cannot span multiple zones.
+
+#### Failover
+We have only two worker nodes, distributed in two (out of three) availability zones. If the node that hosted Jenkins failed, we’d be left with only one node. To be more precise, we’d have only one worker node running in the cluster until the auto-scaling group detects that an EC2 instance is missing and recreates it. During those few minutes, the single node we’re left with is not in the same zone. As we already mentioned, each EBS instance is tied to a zone, and the one we mounted to the Jenkins Pod would not be associated with the zone where the other EC2 instance is running. As a result, the PersistentVolume could not re-bound the EBS volume and, therefore, the failed container could not be recreated, until the failed EC2 instance is recreated.
+
+The chances are that the new EC2 instance would not be in the same zone as the one where the failed server was running. Since we’re using three availability zones, and one of them already has an EC2 instance, AWS would recreate the failed server in one of the other two zones. We’d have fifty percent chances that the new EC2 would be in the same zone as the one where the failed server was running. Those are not good odds.
+
+In the real-world scenario, we’d probably have more than two worker nodes. Even a slight increase to three nodes would give us a very good chance that the failed server would be recreated in the same zone. Auto-scaling groups are trying to distribute EC2 instances more or less equally across all the zones. However, that is not guaranteed to happen. A good minimum number of worker nodes would be six.
+
+The more servers we have, the higher are the chances that the cluster is fault tolerant. That is especially true if we are hosting stateful applications. As it goes, we almost certainly have those. There’s hardly any system that does not have a state in some form or another.
+
+If it’s better to have more servers than less, we might be in a complicated position if our system is small and needs, let’s say, less than six servers. In such cases, I’d recommend running smaller VMs. If, for example, you planned to use three t2.xlarge EC2 instances for worker nodes, you might reconsider that and switch to six t2.large servers. Sure, more nodes mean more resource overhead spent on operating systems, Kubernetes system Pods, and few other things. However, I believe that is compensated with bigger stability of your cluster.
+
+#### How about an entire AZ fails?
+There is still one more situation we might encounter. A whole availability zone (data center) might fail. Kubernetes will continue operating correctly. It’ll have two instead of three master nodes, and the failed worker nodes will be recreated in healthy zones. However, we’d run into trouble with our stateful services. Kubernetes would not be able to reschedule those that were mounted to EBS volumes from the failed zone. We’d need to wait for the availability zone to come back online, or we’d need to move the EBS volume to a healthy zone manually. The chances are that, in such a case, the EBS would not be available and, therefore, could not be moved.
+
+We could create a process that would be replicating data in (near) real-time between EBS volumes spread across multiple availability zones, but that also comes with a downside. Such an operation would be expensive and would likely slow down state retrieval while everything is fully operational. Should we choose lower performance over high-availability? Is the increased operational overhead worth the trouble? The answer to those questions will differ from one use-case to another.
 ## Issues
 ### Docker Networking
 https://docs.docker.com/docker-for-mac/networking/#known-limitations-use-cases-and-workarounds
@@ -259,7 +280,3 @@ Alternatively to use this addon you can use a vm-based driver: 'minikube start -
 
 ## Official Repo
 https://github.com/vfarcic/k8s-specs
-## Upto
-Page 337
-
-Persisting State
