@@ -208,7 +208,7 @@ Which networking shall we use? We can choose between kubenet, CNI, classic, and 
 
 That leaves us with kubenet and CNI.
 
-Container Network Interface (CNI) allows us to plug in a third-party networking driver. Kops supports Calico98, flannel99, Canal (Flannel + Calico)100, kopeio-vxlan101, kube-router102, romana103, weave104, and amazon-vpc-routed-eni105 networks. Each of those networks comes with pros and cons and differs in its implementation and primary objectives.
+Container Network Interface (CNI) allows us to plug in a third-party networking driver. Kops supports Calico, flannel, Canal (Flannel + Calico)100, kopeio-vxlan101, kube-router102, romana103, weave104, and amazon-vpc-routed-eni105 networks. Each of those networks comes with pros and cons and differs in its implementation and primary objectives.
 
 Kubenet is kops’ default networking solution. It is Kubernetes native networking, and it is considered battle tested and very reliable. However, it comes with a limitation. On AWS, routes for each node are configured in AWS VPC routing tables. Since those tables cannot have more than fifty entries, kubenet can be used in clusters with up to fifty nodes. If you’re planning to have a cluster bigger than that, you’ll have to switch to one of the previously mentioned CNIs.
 
